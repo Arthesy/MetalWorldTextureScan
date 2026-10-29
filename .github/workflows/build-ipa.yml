@@ -69,6 +69,14 @@ jobs:
           APP=$(find build/Build/Products/Release-iphoneos -maxdepth 1 -name '*.app' | head -n 1)
           test -n "$APP" || { echo "没有找到 .app"; exit 1; }
           NAME=$(basename "$APP" .app)
+          # 老工程常见：Info.plist 里 NSCameraUsageDescription 是空串，运行即闪退，打包时补上
+          PLIST="$APP/Info.plist"
+          CUR=$(/usr/libexec/PlistBuddy -c "Print :NSCameraUsageDescription" "$PLIST" 2>/dev/null || true)
+          if [ -z "$CUR" ]; then
+            echo "补写相机权限说明"
+            /usr/libexec/PlistBuddy -c "Set :NSCameraUsageDescription 'This app uses the camera and LiDAR sensor to scan your surroundings in 3D.'" "$PLIST" 2>/dev/null \
+              || /usr/libexec/PlistBuddy -c "Add :NSCameraUsageDescription string 'This app uses the camera and LiDAR sensor to scan your surroundings in 3D.'" "$PLIST"
+          fi
           rm -rf Payload && mkdir -p Payload
           cp -R "$APP" Payload/
           zip -qry "${NAME}-unsigned.ipa" Payload
