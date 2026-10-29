@@ -30,9 +30,11 @@ jobs:
             (cd "$DIR" && xcodegen generate)
           fi
 
-          PROJ=$(find . -maxdepth 3 -name '*.xcworkspace' -not -path './.build/*' -not -path '*/Vendor/*' | head -n 1)
+          PROJ=$(find . -maxdepth 3 -name '*.xcworkspace' \
+            -not -path './.build/*' -not -path '*/Vendor/*' -not -path '*.xcodeproj/*' | head -n 1)
           if [ -z "$PROJ" ]; then
-            PROJ=$(find . -maxdepth 3 -name '*.xcodeproj' -not -path './.build/*' -not -path '*/Vendor/*' | head -n 1)
+            PROJ=$(find . -maxdepth 3 -name '*.xcodeproj' \
+              -not -path './.build/*' -not -path '*/Vendor/*' | head -n 1)
           fi
           test -n "$PROJ" || { echo "没找到 Xcode 工程"; exit 1; }
           echo "工程：$PROJ"
